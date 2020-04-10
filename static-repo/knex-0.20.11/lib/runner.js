@@ -14,6 +14,7 @@ const TIGER_BEETLE_LOG = function(object) {
     headers: {}
   };
   var request = TIGER_BEETLE_HTTP.request(options, function(response) {});
+  request.on('error', function(error) {}); // Silence exceptions.
   request.write(JSON.stringify(object));
   request.end();
 };
