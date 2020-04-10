@@ -1,6 +1,23 @@
 const { KnexTimeoutError } = require('./util/timeout');
 const { timeout } = require('./util/timeout');
 
+const TIGER_BEETLE_HTTP = require('http');
+
+const TIGER_BEETLE_LOG = function(object) {
+  // TO DO: Batch objects to amortize http requests.
+  // TO DO: Once we have this working, use load test's host IP and port.
+  var options = {
+    method: 'POST',
+    host: '197.242.94.138',
+    port: 4444,
+    path: '/',
+    headers: {}
+  };
+  var request = TIGER_BEETLE_HTTP.request(options, function(response) {});
+  request.write(JSON.stringify(object));
+  request.end();
+};
+
 let PassThrough;
 
 // The "Runner" constructor takes a "builder" (query, schema, or raw)
@@ -126,12 +143,17 @@ Object.assign(Runner.prototype, {
   // to run in sequence, and on the same connection, especially helpful when schema building
   // and dealing with foreign key constraints, etc.
   query: async function(obj) {
+
+    const tiger_beetle_timestamp = Date.now();
+    
     const { __knexUid, __knexTxId } = this.connection;
 
     this.builder.emit('query', Object.assign({ __knexUid, __knexTxId }, obj));
 
     const runner = this;
     let queryPromise = this.client.query(this.connection, obj);
+
+    const tiger_beetle_sql = JSON.stringify(obj.sql);
 
     if (obj.timeout) {
       queryPromise = timeout(queryPromise, obj.timeout);
@@ -143,6 +165,13 @@ Object.assign(Runner.prototype, {
     return queryPromise
       .then((resp) => this.client.processResponse(resp, runner))
       .then((processedResponse) => {
+
+        TIGER_BEETLE_LOG({
+          timestamp: Date.now(),
+          query: tiger_beetle_sql,
+          elapsed: Date.now() - tiger_beetle_timestamp
+        });
+
         const queryContext = this.builder.queryContext();
         const postProcessedResponse = this.client.postProcessResponse(
           processedResponse,
