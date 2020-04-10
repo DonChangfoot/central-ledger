@@ -1,11 +1,13 @@
 const { KnexTimeoutError } = require('./util/timeout');
 const { timeout } = require('./util/timeout');
 
+
 const TIGER_BEETLE_HTTP = require('http');
 
 const TIGER_BEETLE_LOG = function(object) {
   // TO DO: Batch objects to amortize http requests.
   // TO DO: Once we have this working, use load test's host IP and port.
+  object.timestamp = Date.now();
   var options = {
     method: 'POST',
     host: '197.242.94.138',
@@ -18,6 +20,28 @@ const TIGER_BEETLE_LOG = function(object) {
   request.write(JSON.stringify(object));
   request.end();
 };
+
+// TIGER-BEETLE:
+// Monkey-patch Node's DNS module to intercept all DNS lookups:
+(function() {
+  const dns = require('dns');
+  const lookup = dns.lookup;
+  dns.lookup = function(...request) {
+    const timestamp = Date.now();
+    const callback = request[request.length - 1];
+    request[request.length - 1] = function(...response) {
+      const ms = Date.now() - timestamp;
+      const args = JSON.stringify(request.slice(0, -1)).slice(1, -1);
+      callback(...response);
+      TIGER_BEETLE_LOG({
+        type: 'dns',
+        call: `dns.lookup(${args})`,
+        ms: ms
+      });
+    };
+    lookup(...request);
+  };
+})();
 
 let PassThrough;
 
@@ -168,9 +192,9 @@ Object.assign(Runner.prototype, {
       .then((processedResponse) => {
 
         TIGER_BEETLE_LOG({
-          timestamp: Date.now(),
+          type: 'sql',
           query: tiger_beetle_sql,
-          elapsed: Date.now() - tiger_beetle_timestamp
+          ms: Date.now() - tiger_beetle_timestamp
         });
 
         const queryContext = this.builder.queryContext();
