@@ -12,6 +12,9 @@ steps:
       - 'centralledger-handler-transfer-prepare=gcr.io/mojaloop-prod/central-ledger:$SHORT_SHA'
       - --namespace
       - mojaloop
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=europe-west2-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=performance'
   - name: 'gcr.io/cloud-builders/kubectl'
     args:
       - set
@@ -21,6 +24,9 @@ steps:
       - 'centralledger-handler-transfer-position=gcr.io/mojaloop-prod/central-ledger:$SHORT_SHA'
       - --namespace
       - mojaloop
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=europe-west2-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=performance'
   - name: 'gcr.io/cloud-builders/kubectl'
     args:
       - set
