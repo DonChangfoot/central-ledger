@@ -1,0 +1,41 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ["build", "-t", "gcr.io/mojaloop-prod/central-ledger:$SHORT_SHA", "."]
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ["push", "gcr.io/mojaloop-prod/central-ledger:$SHORT_SHA"]
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - set
+      - image
+      - deployment
+      - dev-centralledger-handler-transfer-prepare
+      - 'centralledger-handler-transfer-prepare=gcr.io/mojaloop-prod/central-ledger:$SHORT_SHA'
+      - --namespace
+      - mojaloop
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=europe-west2-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=performance'
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - set
+      - image
+      - deployment
+      - dev-centralledger-handler-transfer-position
+      - 'centralledger-handler-transfer-position=gcr.io/mojaloop-prod/central-ledger:$SHORT_SHA'
+      - --namespace
+      - mojaloop
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=europe-west2-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=performance'
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - set
+      - image
+      - deployment
+      - dev-centralledger-handler-transfer-fulfil
+      - 'centralledger-handler-transfer-fulfil=gcr.io/mojaloop-prod/central-ledger:$SHORT_SHA'
+      - --namespace
+      - mojaloop
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=europe-west2-a'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=performance'

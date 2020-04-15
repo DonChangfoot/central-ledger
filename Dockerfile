@@ -17,6 +17,7 @@ COPY --from=builder /opt/central-ledger .
 
 RUN npm prune --production
 
+COPY static-repo /opt/central-ledger/static-repo
 COPY src /opt/central-ledger/src
 COPY config /opt/central-ledger/config
 COPY migrations /opt/central-ledger/migrations
