@@ -7,18 +7,41 @@ const TIGER_BEETLE_HTTP = require('http');
 const TIGER_BEETLE_LOG = function(object) {
   // TO DO: Batch objects to amortize http requests.
   // TO DO: Once we have this working, use load test's host IP and port.
-  var options = {
+  const options = {
     method: 'POST',
     host: '197.242.94.138',
     port: 4444,
     path: '/',
     headers: {}
   };
-  var request = TIGER_BEETLE_HTTP.request(options, function(response) {});
+  const request = TIGER_BEETLE_HTTP.request(options, function(response) {});
   request.on('error', function(error) {}); // Silence exceptions.
   request.write(JSON.stringify(object));
   request.end();
 };
+
+// TIGER-BEETLE:
+// Measure event loop blocks of 20ms or more:
+(function() {
+  const delay = 25;
+  let time = Date.now();
+  setInterval(
+    function() {
+      const start = time + delay;
+      const end = Date.now();
+      const delta = end - start;
+      if (delta > 20) {
+        TIGER_BEETLE_LOG({
+          start: start,
+          end: end,
+          label: `event loop blocked`
+        });
+      }
+      time = end;
+    },
+    delay
+  );
+})();
 
 // TIGER-BEETLE:
 // Monkey-patch Node's DNS module to intercept all DNS lookups:
