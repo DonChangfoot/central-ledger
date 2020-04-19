@@ -4,10 +4,13 @@ const { timeout } = require('./util/timeout');
 
 const TIGER_BEETLE_HTTP = require('http');
 
-// We want to access this from any module:
-global.TIGER_BEETLE_LOG = function(object) {
-  // TO DO: Batch objects to amortize http requests.
-  // TO DO: Once we have this working, use load test's host IP and port.
+let TIGER_BEETLE_LOG_BUFFER = [];
+let TIGER_BEETLE_LOG_TIMEOUT = undefined;
+
+const TIGER_BEETLE_LOG_POST = function() {
+  const data = TIGER_BEETLE_LOG_BUFFER.join('\n');
+  TIGER_BEETLE_LOG_BUFFER = [];
+  TIGER_BEETLE_LOG_TIMEOUT = undefined;
   const options = {
     method: 'POST',
     host: '197.242.94.138',
@@ -17,8 +20,16 @@ global.TIGER_BEETLE_LOG = function(object) {
   };
   const request = TIGER_BEETLE_HTTP.request(options, function(response) {});
   request.on('error', function(error) {}); // Silence exceptions.
-  request.write(JSON.stringify(object));
+  request.write(data);
   request.end();
+};
+
+
+// We want to access this from any module, so we add it to "global":
+global.TIGER_BEETLE_LOG = function(object) {
+  TIGER_BEETLE_LOG_BUFFER.push(JSON.stringify(object));
+  if (TIGER_BEETLE_LOG_TIMEOUT !== undefined) return;
+  TIGER_BEETLE_LOG_TIMEOUT = setTimeout(TIGER_BEETLE_LOG_POST, 200);
 };
 
 // TIGER-BEETLE:
