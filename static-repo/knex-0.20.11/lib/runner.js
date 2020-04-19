@@ -1,10 +1,11 @@
 const { KnexTimeoutError } = require('./util/timeout');
 const { timeout } = require('./util/timeout');
 
+// We want these to be globals that we can access from any module:
 
-const TIGER_BEETLE_HTTP = require('http');
+TIGER_BEETLE_HTTP = require('http');
 
-const TIGER_BEETLE_LOG = function(object) {
+TIGER_BEETLE_LOG = function(object) {
   // TO DO: Batch objects to amortize http requests.
   // TO DO: Once we have this working, use load test's host IP and port.
   const options = {
