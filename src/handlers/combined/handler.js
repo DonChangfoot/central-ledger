@@ -260,6 +260,7 @@ const preparePosition = async (error, messages) => {
 }
 
 const fulfilPosition = async (error, messages) => {
+  const tiger_beetle_handler_start = Date.now();
   const location = { module: 'FulfilHandler', method: '', path: '' }
   const histTimerEnd = Metrics.getHistogram(
     'transfer_fulfil',
@@ -501,6 +502,12 @@ const fulfilPosition = async (error, messages) => {
             }
             await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, eventDetail })
             histTimerEnd({ success: true, fspId: Config.INSTRUMENTATION_METRICS_LABELS.fspId })
+
+            TIGER_BEETLE_LOG({
+              start: tiger_beetle_handler_start,
+              end: Date.now(),
+              label: "meta: fulfil/position handler"
+            });
             return true
           } else {
             if (action === TransferEventAction.REJECT) {
