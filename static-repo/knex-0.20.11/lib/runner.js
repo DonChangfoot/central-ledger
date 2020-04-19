@@ -22,16 +22,16 @@ global.TIGER_BEETLE_LOG = function(object) {
 };
 
 // TIGER-BEETLE:
-// Measure event loop blocks of 20ms or more:
+// Measure event loop blocks of 10ms or more:
 (function() {
-  const delay = 25;
+  const delay = 5;
   let time = Date.now();
   setInterval(
     function() {
       const start = time + delay;
       const end = Date.now();
       const delta = end - start;
-      if (delta > 20) {
+      if (delta > 10) {
         TIGER_BEETLE_LOG({
           start: start,
           end: end,
