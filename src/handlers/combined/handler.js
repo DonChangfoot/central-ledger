@@ -114,6 +114,8 @@ const toDestination = true
  * @returns {object} - Returns a boolean: true if successful, or throws and error if failed
  */
 const preparePosition = async (error, messages) => {
+  const tiger_beetle_handler_start = Date.now();
+
   const location = { module: 'PreparePositionHandler', method: '', path: '' }
   const histTimerEnd = Metrics.getHistogram(
     'transfer_prepare',
@@ -208,7 +210,6 @@ const preparePosition = async (error, messages) => {
 
       Logger.info(Util.breadcrumb(location, { path: 'validationPassed' }))
 
-      const tiger_beetle_handler_start = Date.now();
       try {
         Logger.info(Util.breadcrumb(location, 'saveTransfer-PreparePosition'))
 
@@ -224,14 +225,7 @@ const preparePosition = async (error, messages) => {
         return
         // TODO should throw exception and remove metric (handled in the catch)
       }
-      const tiger_beetle_handler_end = Date.now();
-      TIGER_BEETLE_LOG({
-        start: tiger_beetle_handler_start,
-        end: tiger_beetle_handler_end,
-        label: "meta: prepare/position handler"
-      });
 
-      const tiger_beetle_kafka_start = Date.now();
       // next step is prepare->notification (notification to payee dfsp for prepare)
       functionality = Enum.Events.Event.Type.NOTIFICATION
       const eventDetail = { functionality, action: TransferEventAction.PREPARE }
@@ -240,14 +234,14 @@ const preparePosition = async (error, messages) => {
       // wo we proceed as if we completed position...this should result in a notification, which
       // is a forward of the prepare to the payee dfsp.
       await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, eventDetail, toDestination })
-      const tiger_beetle_kafka_end = Date.now();
-      TIGER_BEETLE_LOG({
-        start: tiger_beetle_kafka_start,
-        end: tiger_beetle_kafka_end,
-        label: "meta: kafka insert prepare notification"
-      });
-
+      
       histTimerEnd({ success: true, fspId: Config.INSTRUMENTATION_METRICS_LABELS.fspId })
+
+      TIGER_BEETLE_LOG({
+        start: tiger_beetle_handler_start,
+        end: Date.now(),
+        label: "meta: prepare/position handler"
+      });
       return true
     }
   } catch (err) {
