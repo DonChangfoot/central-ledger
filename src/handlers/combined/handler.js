@@ -228,7 +228,7 @@ const preparePosition = async (error, messages) => {
       TIGER_BEETLE_LOG({
         start: tiger_beetle_handler_start,
         end: tiger_beetle_handler_end,
-        label: "meta: handler"
+        label: "meta: prepare/position handler"
       });
 
       const tiger_beetle_kafka_start = Date.now();
@@ -244,7 +244,7 @@ const preparePosition = async (error, messages) => {
       TIGER_BEETLE_LOG({
         start: tiger_beetle_kafka_start,
         end: tiger_beetle_kafka_end,
-        label: "meta: kafka prepare notification"
+        label: "meta: kafka insert prepare notification"
       });
 
       histTimerEnd({ success: true, fspId: Config.INSTRUMENTATION_METRICS_LABELS.fspId })
