@@ -574,7 +574,7 @@ const saveTransferPreparedChangePosition = async (payload, stateReason = null, h
           await Promise.all([knex('transfer').transacting(trx).insert(transferRecord),
           knex('transferParticipant').transacting(trx).insert(payerTransferParticipantRecord),
           knex('transferParticipant').transacting(trx).insert(payeeTransferParticipantRecord),
-          knex('ilpPacket').transacting(trx).insert(ilpPacketRecord),
+          // knex('ilpPacket').transacting(trx).insert(ilpPacketRecord),
           knex.batchInsert('transferExtension', transferExtensionsRecordList).transacting(trx)])
 
           // we need the tsc ID for the position change later so get it during the insert
