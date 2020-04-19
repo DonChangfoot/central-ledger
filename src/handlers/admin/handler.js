@@ -156,15 +156,15 @@ const transfer = async (error, messages) => {
       Logger.info(`AdminTransferHandler::${payload.action}::invalidPayloadAction`)
     }
     if (httpPostRelatedActions.includes(payload.action)) {
-      // const { hasDuplicateId, hasDuplicateHash } = await Comparators.duplicateCheckComparator(transferId, payload, TransferService.getTransferDuplicateCheck, TransferService.saveTransferDuplicateCheck)
-      // if (!hasDuplicateId) {
+      const { hasDuplicateId, hasDuplicateHash } = await Comparators.duplicateCheckComparator(transferId, payload, TransferService.getTransferDuplicateCheck, TransferService.saveTransferDuplicateCheck)
+      if (!hasDuplicateId) {
         Logger.info(`AdminTransferHandler::${payload.action}::transfer does not exist`)
         await createRecordFundsInOut(payload, transactionTimestamp, enums)
-      // } else if (hasDuplicateHash) {
-      //   await transferExists(payload, transferId)
-      // } else {
-      //   Logger.info(`AdminTransferHandler::${payload.action}::dupcheck::existsNotMatching::request exists with different parameters`)
-      // }
+      } else if (hasDuplicateHash) {
+        await transferExists(payload, transferId)
+      } else {
+        Logger.info(`AdminTransferHandler::${payload.action}::dupcheck::existsNotMatching::request exists with different parameters`)
+      }
     } else {
       await changeStatusOfRecordFundsOut(payload, transferId, transactionTimestamp, enums)
     }
