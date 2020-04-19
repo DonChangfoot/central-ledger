@@ -7,7 +7,6 @@ const TIGER_BEETLE_HTTP = require('http');
 const TIGER_BEETLE_LOG = function(object) {
   // TO DO: Batch objects to amortize http requests.
   // TO DO: Once we have this working, use load test's host IP and port.
-  object.timestamp = Date.now();
   var options = {
     method: 'POST',
     host: '197.242.94.138',
@@ -27,16 +26,16 @@ const TIGER_BEETLE_LOG = function(object) {
   const dns = require('dns');
   const lookup = dns.lookup;
   dns.lookup = function(...request) {
-    const timestamp = Date.now();
+    const start = Date.now();
     const callback = request[request.length - 1];
     request[request.length - 1] = function(...response) {
-      const ms = Date.now() - timestamp;
+      const end = Date.now();
       const args = JSON.stringify(request.slice(0, -1)).slice(1, -1);
       callback(...response);
       TIGER_BEETLE_LOG({
-        type: 'dns',
-        call: `dns.lookup(${args})`,
-        ms: ms
+        start: start,
+        end: end,
+        label: `dns.lookup(${args})`
       });
     };
     lookup(...request);
@@ -169,7 +168,7 @@ Object.assign(Runner.prototype, {
   // and dealing with foreign key constraints, etc.
   query: async function(obj) {
 
-    const tiger_beetle_timestamp = Date.now();
+    const tiger_beetle_start = Date.now();
     
     const { __knexUid, __knexTxId } = this.connection;
 
@@ -192,9 +191,9 @@ Object.assign(Runner.prototype, {
       .then((processedResponse) => {
 
         TIGER_BEETLE_LOG({
-          type: 'sql',
-          query: tiger_beetle_sql,
-          ms: Date.now() - tiger_beetle_timestamp
+          start: tiger_beetle_start,
+          end: Date.now(),
+          label: tiger_beetle_sql
         });
 
         const queryContext = this.builder.queryContext();
