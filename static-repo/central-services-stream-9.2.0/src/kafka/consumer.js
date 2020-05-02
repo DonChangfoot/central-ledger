@@ -569,7 +569,12 @@ class Consumer extends EventEmitter {
         }
 
         if (this._config.options.sync) {
-          this._syncQueue.push({ error, messages }, (error) => {
+          const batch = messages.map(
+            function(message) {
+              return { error: error , messages: [message] }
+            }
+          )
+          this._syncQueue.push(batch, (error) => {
             if (error) {
               logger.error(`Consumer::_consumerRecursive()::syncQueue.push - error: ${error}`)
             }
