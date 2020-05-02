@@ -390,7 +390,13 @@ class Consumer extends EventEmitter {
         } else {
           payload = message.messages
         }
+        const tiger_beetle_consumer_timestamp = Date.now()
         Promise.resolve(workDoneCb(message.error, payload)).then(() => {
+          TIGER_BEETLE_LOG({
+            start: tiger_beetle_consumer_timestamp,
+            end: Date.now(),
+            label: 'kafka consumer: ' + JSON.stringify(this._topics)
+          })
           callbackDone() // this marks the completion of the processing by the worker
           if (this._config.options.mode === CONSUMER_MODES.recursive) { // lets call the recursive event if we are running in recursive mode
             super.emit('recursive', message.error, payload)
