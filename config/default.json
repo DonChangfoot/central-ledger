@@ -179,7 +179,7 @@
           "config": {
             "options": {
               "mode": 2,
-              "batchSize": 1,
+              "batchSize": 4,
               "pollFrequency": 10,
               "recursiveTimeout": 100,
               "messageCharset": "utf8",
