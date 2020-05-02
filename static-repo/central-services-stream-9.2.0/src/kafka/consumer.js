@@ -409,7 +409,7 @@ class Consumer extends EventEmitter {
             super.emit('recursive', err, payload)
           }
         })
-      }, 1)
+      }, 4)
 
       // a callback function, invoked when queue is empty.
       this._syncQueue.drain(() => {
