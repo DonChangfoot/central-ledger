@@ -36,7 +36,7 @@
 
 const Logger = require('@mojaloop/central-services-logger')
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
-const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
+const Consumer = require('../../../static-repo/central-services-stream-9.2.0').Util.Consumer
 const Enum = require('@mojaloop/central-services-shared').Enum
 const Time = require('@mojaloop/central-services-shared').Util.Time
 const ErrorHandler = require('@mojaloop/central-services-error-handling')

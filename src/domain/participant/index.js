@@ -38,7 +38,7 @@ const ParticipantFacade = require('../../models/participant/facade')
 const PositionFacade = require('../../models/position/facade')
 const Config = require('../../lib/config')
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
-const KafkaProducer = require('@mojaloop/central-services-stream').Util.Producer
+const KafkaProducer = require('../../../static-repo/central-services-stream-9.2.0').Util.Producer
 const Uuid = require('uuid4')
 const Enum = require('@mojaloop/central-services-shared').Enum
 

@@ -46,8 +46,8 @@ const TransferService = require('../../domain/transfer')
 const Util = require('@mojaloop/central-services-shared').Util
 const Kafka = require('@mojaloop/central-services-shared').Util.Kafka
 
-const Producer = require('@mojaloop/central-services-stream').Util.Producer
-const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
+const Producer = require('../../../static-repo/central-services-stream-9.2.0').Util.Producer
+const Consumer = require('../../../static-repo/central-services-stream-9.2.0').Util.Consumer
 
 const Validator = require('./validator')
 const Enum = require('@mojaloop/central-services-shared').Enum
@@ -66,7 +66,7 @@ const Utility = require('@mojaloop/central-services-shared').Util
 const Uuid = require('uuid4')
 const decodeMessages = require('@mojaloop/central-services-shared').Util.StreamingProtocol.decodeMessages
 
-const StreamingProtocol = require('@mojaloop/central-services-stream').Util.StreamingProtocol
+const StreamingProtocol = require('../../../static-repo/central-services-stream-9.2.0').Util.StreamingProtocol
 
 const PREPARE_DUPLICATE_INSERT_MODE = process.env.PREPARE_DUPLICATE_INSERT_MODE
 const PREPARE_SEND_POSITION_TO_KAFKA = !(process.env.PREPARE_SEND_POSITION_TO_KAFKA_DISABLED === 'true')

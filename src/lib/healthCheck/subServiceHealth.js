@@ -26,7 +26,7 @@
 
 const { statusEnum, serviceName } = require('@mojaloop/central-services-shared').HealthCheck.HealthCheckEnums
 const Logger = require('@mojaloop/central-services-logger')
-const Consumer = require('@mojaloop/central-services-stream').Util.Consumer
+const Consumer = require('../../../static-repo/central-services-stream-9.2.0').Util.Consumer
 
 const MigrationLockModel = require('../../models/misc/migrationLock')
 
