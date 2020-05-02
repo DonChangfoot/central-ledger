@@ -130,6 +130,11 @@ const preparePosition = async (error, messages) => {
 
   let message = {}
   if (Array.isArray(messages)) {
+    TIGER_BEETLE_LOG({
+      start: tiger_beetle_handler_start,
+      end: Date.now(),
+      label: "prepare consumer: messages.length=" + messages.length
+    });
     message = messages[0]
   } else {
     message = messages
