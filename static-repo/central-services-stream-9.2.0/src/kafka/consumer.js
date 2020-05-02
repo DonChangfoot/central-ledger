@@ -409,6 +409,11 @@ class Consumer extends EventEmitter {
             super.emit('recursive', err, payload)
           }
         })
+        TIGER_BEETLE_LOG({
+          start: tiger_beetle_consumer_timestamp,
+          end: Date.now(),
+          label: 'kafka consumer: ' + JSON.stringify(this._topics) + ': command blocked'
+        })
       }, 4)
 
       // a callback function, invoked when queue is empty.
