@@ -422,10 +422,6 @@ class Consumer extends EventEmitter {
       // a callback function, invoked when queue is empty.
       this._syncQueue.drain(() => {
         this._consumer.resume(this._topics) // resume listening new messages from the Kafka consumer group
-
-        if (this._status.running) {
-          this._consumeRecursive(this._config.options.recursiveTimeout, this._config.options.batchSize, workDoneCb)
-        }
       })
     }
 
@@ -443,6 +439,9 @@ class Consumer extends EventEmitter {
           super.on('recursive', (error) => {
             if (error) {
               logger.error(`Consumer::consume() - error ${error}`)
+            }
+            if (this._status.running) {
+              this._consumeRecursive(this._config.options.recursiveTimeout, this._config.options.batchSize, workDoneCb)
             }
           })
           this._consumeRecursive(this._config.options.recursiveTimeout, this._config.options.batchSize, workDoneCb)
@@ -542,8 +541,14 @@ class Consumer extends EventEmitter {
    */
   _consumeRecursive (recursiveTimeout = 100, batchSize, workDoneCb) {
     const { logger } = this._config
-    
-    if (this._recursing) LEV('_consumeRecursive(): WARNING already recursing')
+
+    // Guard against multiple calls to _consumeRecursive when batchSize > 1:
+    if (this._recursing) return
+    if (this._syncQueue) LEV(`syncQueue: concurrency=${this._syncQueue.concurrency} length=${this._syncQueue.length()}`)
+    if (this._syncQueue && this._syncQueue.concurrency > 1) {
+      if (this._syncQueue.length() > this._syncQueue.concurrency) return
+      LEV('syncQueue: topping up...');
+    }
     this._recursing = true
 
     batchSize = 8
