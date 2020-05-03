@@ -539,7 +539,7 @@ class Consumer extends EventEmitter {
   _consumeRecursive (recursiveTimeout = 100, batchSize, workDoneCb) {
     const { logger } = this._config
     // TIGER_BEETLE:
-    batchSize = 16
+    batchSize = 1
     TIGER_BEETLE_LOG({
       start: Date.now(),
       end: Date.now(),
