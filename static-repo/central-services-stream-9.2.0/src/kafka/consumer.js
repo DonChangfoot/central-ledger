@@ -414,7 +414,7 @@ class Consumer extends EventEmitter {
           end: Date.now(),
           label: 'kafka consumer: ' + JSON.stringify(this._topics) + ': command blocked'
         })
-      }, 4)
+      }, 1)
 
       // a callback function, invoked when queue is empty.
       this._syncQueue.drain(() => {
@@ -538,7 +538,8 @@ class Consumer extends EventEmitter {
    */
   _consumeRecursive (recursiveTimeout = 100, batchSize, workDoneCb) {
     const { logger } = this._config
-    batchSize = 16;
+    // TIGER_BEETLE:
+    batchSize = 16
     TIGER_BEETLE_LOG({
       start: Date.now(),
       end: Date.now(),
