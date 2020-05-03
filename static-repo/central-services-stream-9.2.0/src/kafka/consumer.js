@@ -417,7 +417,7 @@ class Consumer extends EventEmitter {
           end: Date.now(),
           label: 'kafka consumer: ' + JSON.stringify(this._topics) + ': command blocked'
         })
-      }, 1)
+      }, 4)
 
       // a callback function, invoked when queue is empty.
       this._syncQueue.drain(() => {
