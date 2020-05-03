@@ -547,7 +547,7 @@ class Consumer extends EventEmitter {
     if (this._syncQueue) LEV(`syncQueue: concurrency=${this._syncQueue.concurrency} length=${this._syncQueue.length()}`)
     if (this._syncQueue && this._syncQueue.concurrency > 1) {
       if (this._syncQueue.length() > this._syncQueue.concurrency) return
-      LEV('syncQueue: topping up...');
+      LEV('syncQueue: topping up...')
     }
     this._recursing = true
 
@@ -557,6 +557,7 @@ class Consumer extends EventEmitter {
       end: Date.now(),
       label: JSON.stringify(this._topics) + ': batchSize=' + batchSize
     })
+    const lev_consume_start = Date.now();
     this._consumer.consume(batchSize, (error, messages) => {
       this._recursing = false
       if (error || !messages.length) {
@@ -571,6 +572,11 @@ class Consumer extends EventEmitter {
           return false
         }
       } else {
+        LEV({
+          start: lev_consume_start,
+          end: Date.now(),
+          label: `kafka: _consumeRecursive(): consumed ${messages.length} message(s)`
+        })
         // lets transform the messages into the desired format
         messages.map(msg => {
           const parsedValue = Protocol.parseValue(msg.value, this._config.options.messageCharset, this._config.options.messageAsJSON)
