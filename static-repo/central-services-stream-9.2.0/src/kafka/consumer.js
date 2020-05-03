@@ -547,7 +547,14 @@ class Consumer extends EventEmitter {
     if (this._recursing) return
     if (this._syncQueue) LEV(`syncQueue: concurrency=${this._syncQueue.concurrency} length=${this._syncQueue.length()}`)
     if (this._syncQueue && this._syncQueue.concurrency > 1) {
-      if (this._syncQueue.length() > this._syncQueue.concurrency) return
+      // We want to hide the network latency to Kafka by consuming from Kafka in
+      // the background while waiting on workDoneCb to process. We don't want to
+      // consume, then process, then consume because that surfaces the network
+      // latency of consuming from Kafka. We therefore make sure that our
+      // async.queue has more than enough jobs in memory to saturate our
+      // concurrency and batchSize targets.
+      let lowWaterMark = Math.max(this._syncQueue.concurrency, batchSize) * 2
+      if (lowWaterMark < this._syncQueue.length()) return
       LEV('syncQueue: topping up...')
     }
     this._recursing = true
