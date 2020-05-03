@@ -231,6 +231,9 @@ class Consumer extends EventEmitter {
     this._status.runningInConsumeMode = false
     this._status.running = true
 
+    // coil-perf: We use this only to detect any buggy recursive mode logic.
+    this._recursing = false
+
     // setup default onReady emit handler
     super.on('ready', arg => {
       Logger.debug(`Consumer::onReady()[topics='${this._topics}'] - ${JSON.stringify(arg)}`)
@@ -539,6 +542,9 @@ class Consumer extends EventEmitter {
   _consumeRecursive (recursiveTimeout = 100, batchSize, workDoneCb) {
     const { logger } = this._config
     
+    if (this._recursing) LEV('_consumeRecursive(): WARNING already recursing')
+    this._recursing = true
+
     batchSize = 8
     LEV({
       start: Date.now(),
@@ -546,6 +552,7 @@ class Consumer extends EventEmitter {
       label: JSON.stringify(this._topics) + ': batchSize=' + batchSize
     })
     this._consumer.consume(batchSize, (error, messages) => {
+      this._recursing = false
       if (error || !messages.length) {
         if (error) {
           super.emit('error', error)
