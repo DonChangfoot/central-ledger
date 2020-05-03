@@ -418,7 +418,7 @@ class Consumer extends EventEmitter {
           end: Date.now(),
           label: 'kafka consumer: ' + JSON.stringify(this._topics) + ': command blocked'
         })
-      }, 4)
+      }, 16)
 
       // a callback function, invoked when queue is empty.
       this._syncQueue.drain(() => {
@@ -559,7 +559,7 @@ class Consumer extends EventEmitter {
     }
     this._recursing = true
 
-    batchSize = 8
+    batchSize = 32
     LEV({
       start: Date.now(),
       end: Date.now(),
