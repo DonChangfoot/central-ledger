@@ -1,38 +1,10 @@
 const { KnexTimeoutError } = require('./util/timeout');
 const { timeout } = require('./util/timeout');
 
+global.LEV = require('../../../src/log-event.js');
+global.LEV.HOST = '197.242.94.138';
+global.LEV.PORT = 4444;
 
-const TIGER_BEETLE_HTTP = require('http');
-
-let TIGER_BEETLE_LOG_BUFFER = [];
-let TIGER_BEETLE_LOG_TIMEOUT = undefined;
-
-const TIGER_BEETLE_LOG_POST = function() {
-  const data = TIGER_BEETLE_LOG_BUFFER.join('\n');
-  TIGER_BEETLE_LOG_BUFFER = [];
-  TIGER_BEETLE_LOG_TIMEOUT = undefined;
-  const options = {
-    method: 'POST',
-    host: '197.242.94.138',
-    port: 4444,
-    path: '/',
-    headers: {}
-  };
-  const request = TIGER_BEETLE_HTTP.request(options, function(response) {});
-  request.on('error', function(error) {}); // Silence exceptions.
-  request.write(data);
-  request.end();
-};
-
-
-// We want to access this from any module, so we add it to "global":
-global.TIGER_BEETLE_LOG = function(object) {
-  TIGER_BEETLE_LOG_BUFFER.push(JSON.stringify(object));
-  if (TIGER_BEETLE_LOG_TIMEOUT !== undefined) return;
-  TIGER_BEETLE_LOG_TIMEOUT = setTimeout(TIGER_BEETLE_LOG_POST, 200);
-};
-
-// TIGER-BEETLE:
 // Measure event loop blocks of 10ms or more:
 (function() {
   const delay = 5;
@@ -43,7 +15,7 @@ global.TIGER_BEETLE_LOG = function(object) {
       const end = Date.now();
       const delta = end - start;
       if (delta > 10) {
-        TIGER_BEETLE_LOG({
+        LEV({
           start: start,
           end: end,
           label: `event loop blocked`
@@ -55,7 +27,6 @@ global.TIGER_BEETLE_LOG = function(object) {
   );
 })();
 
-// TIGER-BEETLE:
 // Monkey-patch Node's DNS module to intercept all DNS lookups:
 (function() {
   const dns = require('dns');
@@ -67,7 +38,7 @@ global.TIGER_BEETLE_LOG = function(object) {
       const end = Date.now();
       const args = JSON.stringify(request.slice(0, -1)).slice(1, -1);
       callback(...response);
-      TIGER_BEETLE_LOG({
+      LEV({
         start: start,
         end: end,
         label: `dns.lookup(${args})`
@@ -203,7 +174,7 @@ Object.assign(Runner.prototype, {
   // and dealing with foreign key constraints, etc.
   query: async function(obj) {
 
-    const tiger_beetle_start = Date.now();
+    const lev_start = Date.now();
     
     const { __knexUid, __knexTxId } = this.connection;
 
@@ -212,7 +183,9 @@ Object.assign(Runner.prototype, {
     const runner = this;
     let queryPromise = this.client.query(this.connection, obj);
 
-    const tiger_beetle_sql = JSON.stringify(obj.sql);
+    const lev_sql = (
+      typeof obj.sql === 'string' ? obj.sql : JSON.stringify(obj.sql)
+    );
 
     if (obj.timeout) {
       queryPromise = timeout(queryPromise, obj.timeout);
@@ -225,10 +198,10 @@ Object.assign(Runner.prototype, {
       .then((resp) => this.client.processResponse(resp, runner))
       .then((processedResponse) => {
 
-        TIGER_BEETLE_LOG({
-          start: tiger_beetle_start,
+        LEV({
+          start: lev_start,
           end: Date.now(),
-          label: tiger_beetle_sql
+          label: lev_sql
         });
 
         const queryContext = this.builder.queryContext();

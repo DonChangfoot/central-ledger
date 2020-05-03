@@ -114,7 +114,7 @@ const toDestination = true
  * @returns {object} - Returns a boolean: true if successful, or throws and error if failed
  */
 const preparePosition = async (error, messages) => {
-  const tiger_beetle_handler_start = Date.now();
+  const lev_handler_start = Date.now();
 
   const location = { module: 'PreparePositionHandler', method: '', path: '' }
   const histTimerEnd = Metrics.getHistogram(
@@ -130,11 +130,9 @@ const preparePosition = async (error, messages) => {
 
   let message = {}
   if (Array.isArray(messages)) {
-    TIGER_BEETLE_LOG({
-      start: tiger_beetle_handler_start,
-      end: Date.now(),
-      label: "prepare consumer: messages.length=" + messages.length
-    });
+    if (messages.length > 1) {
+      LEV('preparePosition(): WARNING messages.length=' + messages.length);
+    }
     message = messages[0]
   } else {
     message = messages
@@ -242,10 +240,10 @@ const preparePosition = async (error, messages) => {
       
       histTimerEnd({ success: true, fspId: Config.INSTRUMENTATION_METRICS_LABELS.fspId })
 
-      TIGER_BEETLE_LOG({
-        start: tiger_beetle_handler_start,
+      LEV({
+        start: lev_handler_start,
         end: Date.now(),
-        label: "meta: prepare/position handler"
+        label: "prepare/position handler"
       });
       return true
     }
@@ -265,7 +263,7 @@ const preparePosition = async (error, messages) => {
 }
 
 const fulfilPosition = async (error, messages) => {
-  const tiger_beetle_handler_start = Date.now();
+  const lev_handler_start = Date.now();
   const location = { module: 'FulfilHandler', method: '', path: '' }
   const histTimerEnd = Metrics.getHistogram(
     'transfer_fulfil',
@@ -508,10 +506,10 @@ const fulfilPosition = async (error, messages) => {
             await Kafka.proceed(Config.KAFKA_CONFIG, params, { consumerCommit, eventDetail })
             histTimerEnd({ success: true, fspId: Config.INSTRUMENTATION_METRICS_LABELS.fspId })
 
-            TIGER_BEETLE_LOG({
-              start: tiger_beetle_handler_start,
+            LEV({
+              start: lev_handler_start,
               end: Date.now(),
-              label: "meta: fulfil/position handler"
+              label: "fulfil/position handler"
             });
             return true
           } else {

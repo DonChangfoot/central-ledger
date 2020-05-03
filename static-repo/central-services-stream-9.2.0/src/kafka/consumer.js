@@ -390,10 +390,10 @@ class Consumer extends EventEmitter {
         } else {
           payload = message.messages
         }
-        const tiger_beetle_consumer_timestamp = Date.now()
+        const lev_consumer_timestamp = Date.now()
         Promise.resolve(workDoneCb(message.error, payload)).then(() => {
-          TIGER_BEETLE_LOG({
-            start: tiger_beetle_consumer_timestamp,
+          LEV({
+            start: lev_consumer_timestamp,
             end: Date.now(),
             label: 'kafka consumer: ' + JSON.stringify(this._topics)
           })
@@ -409,8 +409,8 @@ class Consumer extends EventEmitter {
             super.emit('recursive', err, payload)
           }
         })
-        TIGER_BEETLE_LOG({
-          start: tiger_beetle_consumer_timestamp,
+        LEV({
+          start: lev_consumer_timestamp,
           end: Date.now(),
           label: 'kafka consumer: ' + JSON.stringify(this._topics) + ': command blocked'
         })
@@ -538,9 +538,9 @@ class Consumer extends EventEmitter {
    */
   _consumeRecursive (recursiveTimeout = 100, batchSize, workDoneCb) {
     const { logger } = this._config
-    // TIGER_BEETLE:
+    
     batchSize = 8
-    TIGER_BEETLE_LOG({
+    LEV({
       start: Date.now(),
       end: Date.now(),
       label: JSON.stringify(this._topics) + ': batchSize=' + batchSize
