@@ -261,7 +261,8 @@ class Consumer extends EventEmitter {
     return new Promise((resolve, reject) => {
       this._consumer = new Kafka.KafkaConsumer(this._config.rdkafkaConf, this._config.topicConf)
 
-      this._consumer.setDefaultConsumeTimeout(this._config.options.consumeTimeout)
+      // coil-perf:
+      this._consumer.setDefaultConsumeTimeout(70 || this._config.options.consumeTimeout)
       // this._setDefaultConsumeTimeout(this._config.options.consumeTimeout)
 
       this._consumer.on('event.log', log => {
