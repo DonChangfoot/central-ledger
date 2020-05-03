@@ -422,6 +422,10 @@ class Consumer extends EventEmitter {
       // a callback function, invoked when queue is empty.
       this._syncQueue.drain(() => {
         this._consumer.resume(this._topics) // resume listening new messages from the Kafka consumer group
+
+        if (this._status.running) {
+          this._consumeRecursive(this._config.options.recursiveTimeout, this._config.options.batchSize, workDoneCb)
+        }
       })
     }
 
@@ -439,9 +443,6 @@ class Consumer extends EventEmitter {
           super.on('recursive', (error) => {
             if (error) {
               logger.error(`Consumer::consume() - error ${error}`)
-            }
-            if (this._status.running) {
-              this._consumeRecursive(this._config.options.recursiveTimeout, this._config.options.batchSize, workDoneCb)
             }
           })
           this._consumeRecursive(this._config.options.recursiveTimeout, this._config.options.batchSize, workDoneCb)
