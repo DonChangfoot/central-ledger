@@ -38,7 +38,7 @@
 'use strict'
 
 // coil-perf:
-const CONCURRENCY = 16
+const CONCURRENCY = 32
 const KAFKA_BATCH_COUNT = CONCURRENCY * 2
 const KAFKA_BATCH_TIMEOUT = 50
 
