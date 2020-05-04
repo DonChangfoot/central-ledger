@@ -131,7 +131,7 @@ const preparePosition = async (error, messages) => {
   let message = {}
   if (Array.isArray(messages)) {
     if (messages.length > 1) {
-      LEV('preparePosition(): WARNING messages.length=' + messages.length);
+      LEV(`handler: preparePosition(): WARNING messages.length=${messages.length}`);
     }
     message = messages[0]
   } else {
@@ -243,7 +243,7 @@ const preparePosition = async (error, messages) => {
       LEV({
         start: lev_handler_start,
         end: Date.now(),
-        label: "prepare/position handler"
+        label: 'handler: prepare/position'
       });
       return true
     }
@@ -509,7 +509,7 @@ const fulfilPosition = async (error, messages) => {
             LEV({
               start: lev_handler_start,
               end: Date.now(),
-              label: "fulfil/position handler"
+              label: 'handler: fulfil/position'
             });
             return true
           } else {
