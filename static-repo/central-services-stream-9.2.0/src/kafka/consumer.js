@@ -37,6 +37,11 @@
 
 'use strict'
 
+// coil-perf:
+const CONCURRENCY = 1
+const KAFKA_BATCH_COUNT = 1
+const KAFKA_BATCH_TIMEOUT = 1000
+
 const EventEmitter = require('events')
 const async = require('async')
 const Logger = require('@mojaloop/central-services-logger')
@@ -262,7 +267,8 @@ class Consumer extends EventEmitter {
       this._consumer = new Kafka.KafkaConsumer(this._config.rdkafkaConf, this._config.topicConf)
 
       // coil-perf:
-      this._consumer.setDefaultConsumeTimeout(70 || this._config.options.consumeTimeout)
+      this._consumer.setDefaultConsumeTimeout(KAFKA_BATCH_TIMEOUT)
+      // this._consumer.setDefaultConsumeTimeout(this._config.options.consumeTimeout)
       // this._setDefaultConsumeTimeout(this._config.options.consumeTimeout)
 
       this._consumer.on('event.log', log => {
@@ -418,7 +424,7 @@ class Consumer extends EventEmitter {
           end: Date.now(),
           label: 'kafka consumer: ' + JSON.stringify(this._topics) + ': command blocked'
         })
-      }, 16)
+      }, CONCURRENCY)
 
       // a callback function, invoked when queue is empty.
       this._syncQueue.drain(() => {
@@ -559,7 +565,8 @@ class Consumer extends EventEmitter {
     }
     this._recursing = true
 
-    batchSize = 32
+    // coil-perf:
+    batchSize = KAFKA_BATCH_COUNT
     LEV({
       start: Date.now(),
       end: Date.now(),
