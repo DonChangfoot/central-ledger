@@ -201,7 +201,7 @@ Object.assign(Runner.prototype, {
         LEV({
           start: lev_start,
           end: Date.now(),
-          label: lev_sql
+          label: 'sql: ' + lev_sql
         });
 
         const queryContext = this.builder.queryContext();
