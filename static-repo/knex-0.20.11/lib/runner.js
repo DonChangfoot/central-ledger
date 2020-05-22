@@ -2,8 +2,8 @@ const { KnexTimeoutError } = require('./util/timeout');
 const { timeout } = require('./util/timeout');
 
 global.LEV = require('../../../src/log-event.js');
-global.LEV.HOST = '197.242.94.138';
-global.LEV.PORT = 4444;
+global.LEV.HOST = process.env.LEV_HOST || '197.242.94.138';
+global.LEV.PORT = process.env.LEV_PORT || 4444;
 
 // Measure event loop blocks of 10ms or more:
 (function() {
