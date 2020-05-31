@@ -38,9 +38,9 @@
 'use strict'
 
 // coil-perf:
-const CONCURRENCY = 1
-const KAFKA_BATCH_COUNT = 7
-const KAFKA_BATCH_TIMEOUT = 13000
+const CONCURRENCY = 10
+const KAFKA_BATCH_COUNT = 10
+const KAFKA_BATCH_TIMEOUT = 10
 
 const EventEmitter = require('events')
 const async = require('async')
