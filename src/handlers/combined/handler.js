@@ -181,7 +181,7 @@ const preparePosition = async (error, messages) => {
     // ### START: Placeholder for modifing Comparators.duplicateCheckComparator algorithm to use an insert only method for duplicate checking
     const generatedHash = generateSha256(payload) // modified from @mojaloop/central-services-shared/src/util/comparators/duplicateCheckComparator.js
     try {
-      await TransferService.saveTransferDuplicateCheck(transferId, generatedHash) // modified from @mojaloop/central-services-shared/src/util/comparators/duplicateCheckComparator.js
+      // await TransferService.saveTransferDuplicateCheck(transferId, generatedHash) // modified from @mojaloop/central-services-shared/src/util/comparators/duplicateCheckComparator.js
       hasDuplicateId = false // overriding results to golden path successful use-case only for testing purposes
       hasDuplicateHash = false // overriding results to golden path successful use-case only for testing purposes
     } catch (err) {
@@ -359,9 +359,9 @@ const fulfilPosition = async (error, messages) => {
       const generatedHash = generateSha256(payload) // modified from @mojaloop/central-services-shared/src/util/comparators/duplicateCheckComparator.js
       try {
         if (!isTransferError) {
-          await TransferService.saveTransferFulfilmentDuplicateCheck(transferId, generatedHash) // modified from @mojaloop/central-services-shared/src/util/comparators/duplicateCheckComparator.js
+          // await TransferService.saveTransferFulfilmentDuplicateCheck(transferId, generatedHash) // modified from @mojaloop/central-services-shared/src/util/comparators/duplicateCheckComparator.js
         } else {
-          await TransferService.saveTransferErrorDuplicateCheck(transferId, generatedHash) // modified from @mojaloop/central-services-shared/src/util/comparators/duplicateCheckComparator.js
+          // await TransferService.saveTransferErrorDuplicateCheck(transferId, generatedHash) // modified from @mojaloop/central-services-shared/src/util/comparators/duplicateCheckComparator.js
         }
         hasDuplicateId = false // overriding results to golden path successful use-case only for testing purposes
         hasDuplicateHash = false // overriding results to golden path successful use-case only for testing purposes
