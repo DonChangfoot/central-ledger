@@ -56,6 +56,11 @@ const migrate = (runMigrations) => {
   return runMigrations ? Migrator.migrate() : true
 }
 const connectDatabase = async () => {
+  // coil-perf:
+  LEV(`Config.DATABASE Old=${JSON.stringify(Config.DATABASE)}`)
+  Config.DATABASE.POOL_MIN_SIZE = 100
+  Config.DATABASE.POOL_MAX_SIZE = 100
+  LEV(`Config.DATABASE New=${JSON.stringify(Config.DATABASE)}`)
   return Db.connect(Config.DATABASE)
 }
 const connectMongoose = async () => {
