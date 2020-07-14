@@ -614,30 +614,44 @@ class Consumer extends EventEmitter {
         // } else {
         //   logger.debug(`Consumer::_consumerRecursive() - messages[${messages.length}]: ${messages}}`)
         // }
-        if (TIGER_BEETLE_BATCH.hasOwnProperty(this._topics[0])) {
-          let batch = TIGER_BEETLE_BATCH[this._topics[0]]
-          // Initialize timestamp only when first message is pushed into batch:
-          // (not when previous batch was closed out)
-          if (batch.array.length === 0) batch.timestamp = Date.now()
-          batch.array.push(...messages)
-          let ms = Date.now() - batch.timestamp
-          LEV({
-            start: Date.now(),
-            end: Date.now(),
-            label: `kafka: ${this._topics}: batch has ${batch.array.length} messages after ${ms}ms`
-          })
-          if (ms > 900 || batch.array.length > 100) {
-            // Close out batch and send to TigerBeetle:
+        try {
+          if (TIGER_BEETLE_BATCH.hasOwnProperty(this._topics[0])) {
+            let batch = TIGER_BEETLE_BATCH[this._topics[0]]
+            // Initialize timestamp only when first message is pushed into batch:
+            // (not when previous batch was closed out)
+            if (batch.array.length === 0) batch.timestamp = Date.now()
+            batch.array.push(...messages)
+            let ms = Date.now() - batch.timestamp
             LEV({
               start: Date.now(),
               end: Date.now(),
-              label: `kafka: ${this._topics}: batched ${batch.array.length} messages in ${ms}ms`
+              label: `kafka: ${this._topics}: batch has ${batch.array.length} messages after ${ms}ms`
             })
-            batch.array = []
-          } else {
-            // TODO set timeout in case no further messages arrive
+            if (ms > 900 || batch.array.length > 100) {
+              // Close out batch and send to TigerBeetle:
+              LEV({
+                start: Date.now(),
+                end: Date.now(),
+                label: `kafka: ${this._topics}: batched ${batch.array.length} messages in ${ms}ms`
+              })
+              batch.array = []
+            } else {
+              // TODO set timeout in case no further messages arrive
+            }
             return true
+          } else {
+            LEV({
+              start: Date.now(),
+              end: Date.now(),
+              label: `kafka: ${this._topics}: not batching this topic`
+            })
           }
+        } catch (exception) {
+          LEV({
+            start: Date.now(),
+            end: Date.now(),
+            label: `kafka: ${this._topics}: batch exception ${exception}`
+          })
         }
 
         if (this._config.options.sync) {
