@@ -39,8 +39,12 @@
 
 // coil-perf:
 const CONCURRENCY = 8
-const KAFKA_BATCH_COUNT = 10
-const KAFKA_BATCH_TIMEOUT = 50
+const KAFKA_BATCH_COUNT = 100
+const KAFKA_BATCH_TIMEOUT = 50 // TODO set this per topic so we can optimize prepares and fulfils but not delay notifications
+const TIGER_BEETLE_BATCH = {
+  'topic-transfer-prepare': { array: [], timestamp: 0 },
+  'topic-transfer-fulfil': { array: [], timestamp: 0 }
+}
 
 const EventEmitter = require('events')
 const async = require('async')
@@ -553,29 +557,29 @@ class Consumer extends EventEmitter {
 
     // Guard against multiple calls to _consumeRecursive when batchSize > 1:
     if (this._recursing) return
-    if (this._syncQueue) LEV(`kafka: ${this._topics}: _consumeRecursive(): syncQueue: concurrency=${this._syncQueue.concurrency} length=${this._syncQueue.length()}`)
-    if (this._syncQueue && this._syncQueue.concurrency > 1) {
-      // We want to hide the network latency to Kafka by consuming from Kafka in
-      // the background while waiting on workDoneCb to process. We don't want to
-      // consume, then process, then consume because that surfaces the network
-      // latency of consuming from Kafka. We therefore make sure that our
-      // async.queue has more than enough jobs in memory to saturate our
-      // concurrency and batchSize targets.
-      let lowWaterMark = Math.max(this._syncQueue.concurrency, batchSize, 1) * 2
-      let syncQueueLength = this._syncQueue.length()
-      if (syncQueueLength > lowWaterMark) return
-      if (syncQueueLength > 0) LEV(`kafka: ${this._topics}: _consumeRecursive(): syncQueue: topping up...`)
-    }
+    // if (this._syncQueue) LEV(`kafka: ${this._topics}: _consumeRecursive(): syncQueue: concurrency=${this._syncQueue.concurrency} length=${this._syncQueue.length()}`)
+    // if (this._syncQueue && this._syncQueue.concurrency > 1) {
+    //   // We want to hide the network latency to Kafka by consuming from Kafka in
+    //   // the background while waiting on workDoneCb to process. We don't want to
+    //   // consume, then process, then consume because that surfaces the network
+    //   // latency of consuming from Kafka. We therefore make sure that our
+    //   // async.queue has more than enough jobs in memory to saturate our
+    //   // concurrency and batchSize targets.
+    //   let lowWaterMark = Math.max(this._syncQueue.concurrency, batchSize, 1) * 2
+    //   let syncQueueLength = this._syncQueue.length()
+    //   if (syncQueueLength > lowWaterMark) return
+    //   if (syncQueueLength > 0) LEV(`kafka: ${this._topics}: _consumeRecursive(): syncQueue: topping up...`)
+    // }
     this._recursing = true
 
     // coil-perf:
     batchSize = KAFKA_BATCH_COUNT
-    LEV({
-      start: Date.now(),
-      end: Date.now(),
-      label: `kafka: ${this._topics}: _consumeRecursive(): batchCount=${batchSize} batchTimeout=${KAFKA_BATCH_TIMEOUT}`
-    })
-    const lev_consume_start = Date.now()
+    // LEV({
+    //   start: Date.now(),
+    //   end: Date.now(),
+    //   label: `kafka: ${this._topics}: _consumeRecursive(): batchCount=${batchSize} batchTimeout=${KAFKA_BATCH_TIMEOUT}`
+    // })
+    // const lev_consume_start = Date.now()
     this._consumer.consume(batchSize, (error, messages) => {
       this._recursing = false
       if (error || !messages.length) {
@@ -583,11 +587,11 @@ class Consumer extends EventEmitter {
           super.emit('error', error)
         }
         if (this._status.running) {
-          LEV({
-            start: lev_consume_start,
-            end: Date.now(),
-            label: `kafka: ${this._topics}: _consumeRecursive(): EOF, waiting ${recursiveTimeout}ms until next poll...`
-          })
+          // LEV({
+          //   start: lev_consume_start,
+          //   end: Date.now(),
+          //   label: `kafka: ${this._topics}: _consumeRecursive(): EOF, waiting ${recursiveTimeout}ms until next poll...`
+          // })
           return setTimeout(() => {
             return this._consumeRecursive(recursiveTimeout, batchSize, workDoneCb)
           }, recursiveTimeout)
@@ -595,20 +599,40 @@ class Consumer extends EventEmitter {
           return false
         }
       } else {
-        LEV({
-          start: lev_consume_start,
-          end: Date.now(),
-          label: `kafka: ${this._topics}: _consumeRecursive(): received ${messages.length} message(s)`
-        })
+        // LEV({
+        //   start: lev_consume_start,
+        //   end: Date.now(),
+        //   label: `kafka: ${this._topics}: _consumeRecursive(): received ${messages.length} message(s)`
+        // })
         // lets transform the messages into the desired format
         messages.map(msg => {
           const parsedValue = Protocol.parseValue(msg.value, this._config.options.messageCharset, this._config.options.messageAsJSON)
           msg.value = parsedValue
         })
-        if (this._config.options.messageAsJSON) {
-          logger.debug(`Consumer::_consumerRecursive() - messages[${messages.length}]: ${JSON.stringify(messages)}}`)
-        } else {
-          logger.debug(`Consumer::_consumerRecursive() - messages[${messages.length}]: ${messages}}`)
+        // if (this._config.options.messageAsJSON) {
+        //   logger.debug(`Consumer::_consumerRecursive() - messages[${messages.length}]: ${JSON.stringify(messages)}}`)
+        // } else {
+        //   logger.debug(`Consumer::_consumerRecursive() - messages[${messages.length}]: ${messages}}`)
+        // }
+        if (TIGER_BEETLE_BATCH.hasOwnProperty(this._topics[0])) {
+          let batch = TIGER_BEETLE_BATCH[this._topics[0]]
+          // Initialize timestamp only when first message is pushed into batch:
+          // (not when previous batch was closed out)
+          if (batch.array.length === 0) batch.timestamp = Date.now()
+          batch.array.push(...messages)
+          let ms = Date.now() - batch.timestamp
+          if (ms > 900 || batch.array.length > 1000) {
+            // Close out batch and send to TigerBeetle:
+            LEV({
+              start: Date.now(),
+              end: Date.now(),
+              label: `kafka: ${this._topics}: batched ${batch.array.length} messages in ${ms}ms`
+            })
+            batch.array = []
+          } else {
+            // TODO set timeout in case no further messages arrive
+            return true
+          }
         }
 
         if (this._config.options.sync) {
