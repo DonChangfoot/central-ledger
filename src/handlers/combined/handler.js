@@ -285,7 +285,6 @@ const fulfilPosition = async (error, messages) => {
   try {
     await span.audit(message, EventSdk.AuditEventAction.start)
     const payload = decodePayload(message.value.content.payload)
-    LEV({ start: Date.now(), end: Date.now(), label: 'fulfill payload: ' + JSON.stringify(payload) });
     const headers = message.value.content.headers
     const type = message.value.metadata.event.type
     const action = message.value.metadata.event.action
