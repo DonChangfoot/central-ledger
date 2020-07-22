@@ -39,7 +39,7 @@
 
 // coil-perf:
 const CONCURRENCY = 8
-const KAFKA_BATCH_COUNT = 10
+const KAFKA_BATCH_COUNT = 100
 const KAFKA_BATCH_TIMEOUT = 50 // TODO set this per topic so we can optimize prepares and fulfils but not delay notifications
 const TIGER_BEETLE_BATCH = {
   'topic-transfer-prepare': { array: [], timestamp: 0 },
@@ -621,12 +621,7 @@ class Consumer extends EventEmitter {
           if (batch.array.length === 0) batch.timestamp = Date.now()
           batch.array.push(...messages)
           let ms = Date.now() - batch.timestamp
-          LEV({
-            start: Date.now(),
-            end: Date.now(),
-            label: `kafka: ${this._topics}: batch has ${batch.array.length} messages after ${ms}ms`
-          })
-          if (ms > 900 || batch.array.length > 100) {
+          if (ms > 900 || batch.array.length > 1000) {
             // Close out batch and send to TigerBeetle:
             LEV({
               start: Date.now(),
