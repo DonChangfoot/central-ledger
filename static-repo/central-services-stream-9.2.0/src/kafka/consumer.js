@@ -638,7 +638,6 @@ class Consumer extends EventEmitter {
             } else {
               // TODO set timeout in case no further messages arrive
             }
-            this._consumeRecursive(recursiveTimeout, batchSize, workDoneCb)
             return true
           } else {
             LEV({
