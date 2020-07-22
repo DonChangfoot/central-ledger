@@ -198,11 +198,11 @@ Object.assign(Runner.prototype, {
       .then((resp) => this.client.processResponse(resp, runner))
       .then((processedResponse) => {
 
-        LEV({
-          start: lev_start,
-          end: Date.now(),
-          label: 'sql: ' + lev_sql
-        });
+        // LEV({
+        //   start: lev_start,
+        //   end: Date.now(),
+        //   label: 'sql: ' + lev_sql
+        // });
 
         const queryContext = this.builder.queryContext();
         const postProcessedResponse = this.client.postProcessResponse(

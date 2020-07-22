@@ -402,11 +402,11 @@ class Consumer extends EventEmitter {
         }
         const lev_consumer_timestamp = Date.now()
         Promise.resolve(workDoneCb(message.error, payload)).then(() => {
-          LEV({
-            start: lev_consumer_timestamp,
-            end: Date.now(),
-            label: `kafka: ${this._topics}: consume(): processed message`
-          })
+          // LEV({
+          //   start: lev_consumer_timestamp,
+          //   end: Date.now(),
+          //   label: `kafka: ${this._topics}: consume(): processed message`
+          // })
           callbackDone() // this marks the completion of the processing by the worker
           if (this._config.options.mode === CONSUMER_MODES.recursive) { // lets call the recursive event if we are running in recursive mode
             super.emit('recursive', message.error, payload)
@@ -420,11 +420,11 @@ class Consumer extends EventEmitter {
           }
         })
         if (Date.now() - lev_consumer_timestamp > 10) {
-          LEV({
-            start: lev_consumer_timestamp,
-            end: Date.now(),
-            label: `kafka: ${this._topics}: consume(): WARNING blocked while processing message`
-          })
+          // LEV({
+          //   start: lev_consumer_timestamp,
+          //   end: Date.now(),
+          //   label: `kafka: ${this._topics}: consume(): WARNING blocked while processing message`
+          // })
         }
       }, CONCURRENCY)
 
@@ -553,7 +553,7 @@ class Consumer extends EventEmitter {
 
     // Guard against multiple calls to _consumeRecursive when batchSize > 1:
     if (this._recursing) return
-    if (this._syncQueue) LEV(`kafka: ${this._topics}: _consumeRecursive(): syncQueue: concurrency=${this._syncQueue.concurrency} length=${this._syncQueue.length()}`)
+    // if (this._syncQueue) LEV(`kafka: ${this._topics}: _consumeRecursive(): syncQueue: concurrency=${this._syncQueue.concurrency} length=${this._syncQueue.length()}`)
     if (this._syncQueue && this._syncQueue.concurrency > 1) {
       // We want to hide the network latency to Kafka by consuming from Kafka in
       // the background while waiting on workDoneCb to process. We don't want to
@@ -564,17 +564,17 @@ class Consumer extends EventEmitter {
       let lowWaterMark = Math.max(this._syncQueue.concurrency, batchSize, 1) * 2
       let syncQueueLength = this._syncQueue.length()
       if (syncQueueLength > lowWaterMark) return
-      if (syncQueueLength > 0) LEV(`kafka: ${this._topics}: _consumeRecursive(): syncQueue: topping up...`)
+      // if (syncQueueLength > 0) LEV(`kafka: ${this._topics}: _consumeRecursive(): syncQueue: topping up...`)
     }
     this._recursing = true
 
     // coil-perf:
     batchSize = KAFKA_BATCH_COUNT
-    LEV({
-      start: Date.now(),
-      end: Date.now(),
-      label: `kafka: ${this._topics}: _consumeRecursive(): batchCount=${batchSize} batchTimeout=${KAFKA_BATCH_TIMEOUT}`
-    })
+    // LEV({
+    //   start: Date.now(),
+    //   end: Date.now(),
+    //   label: `kafka: ${this._topics}: _consumeRecursive(): batchCount=${batchSize} batchTimeout=${KAFKA_BATCH_TIMEOUT}`
+    // })
     const lev_consume_start = Date.now()
     this._consumer.consume(batchSize, (error, messages) => {
       this._recursing = false
@@ -583,11 +583,11 @@ class Consumer extends EventEmitter {
           super.emit('error', error)
         }
         if (this._status.running) {
-          LEV({
-            start: lev_consume_start,
-            end: Date.now(),
-            label: `kafka: ${this._topics}: _consumeRecursive(): EOF, waiting ${recursiveTimeout}ms until next poll...`
-          })
+          // LEV({
+          //   start: lev_consume_start,
+          //   end: Date.now(),
+          //   label: `kafka: ${this._topics}: _consumeRecursive(): EOF, waiting ${recursiveTimeout}ms until next poll...`
+          // })
           return setTimeout(() => {
             return this._consumeRecursive(recursiveTimeout, batchSize, workDoneCb)
           }, recursiveTimeout)
