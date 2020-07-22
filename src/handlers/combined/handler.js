@@ -219,7 +219,6 @@ const preparePosition = async (error, messages) => {
         // write the transfer to the DB...AND attempt payer dfsp position adjustment at the same time
         // note that this is an optimisation to the previous architecture where we broke prepare and position
         // into two steps. Here we do both in one operation
-        LEV({ start: Date.now(), end: Date.now(), label: 'prepare payload: ' + JSON.stringify(payload) });
         await TransferService.preparePosition(payload)
       } catch (err) {
         Logger.info(Util.breadcrumb(location, `callbackErrorInternal1--${actionLetter}6`))
